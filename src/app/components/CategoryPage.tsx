@@ -11,6 +11,7 @@ interface Movie {
 interface CategoryPageProps {
   movies?: Movie[];
   onMovieClick?: (movieId: string) => void;
+  onAddToWatchlist?: (movieId: string) => void;
 }
 
 const categories = [
@@ -24,7 +25,7 @@ const categories = [
   { id: 'romance', name: 'Lãng mạn', color: 'from-pink-500 to-rose-600' },
 ];
 
-export function CategoryPage({ movies = [], onMovieClick }: CategoryPageProps) {
+export function CategoryPage({ movies = [], onMovieClick, onAddToWatchlist }: CategoryPageProps) {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState<'popular' | 'rating' | 'newest'>('popular');
 
@@ -184,11 +185,24 @@ export function CategoryPage({ movies = [], onMovieClick }: CategoryPageProps) {
                   </div>
 
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                    <button className="flex-1 flex items-center justify-center gap-2 bg-white hover:bg-gray-200 text-black font-semibold px-4 py-2.5 rounded-lg transition-all duration-200">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onMovieClick?.(movie.id);
+                      }}
+                      className="flex-1 flex items-center justify-center gap-2 bg-white hover:bg-gray-200 text-black font-semibold px-4 py-2.5 rounded-lg transition-all duration-200"
+                    >
                       <Play className="w-4 h-4 fill-current" />
                       <span className="text-sm">Phát</span>
                     </button>
-                    <button className="p-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white rounded-lg border border-white/30 transition-all duration-200">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onAddToWatchlist?.(movie.id);
+                      }}
+                      className="p-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white rounded-lg border border-white/30 transition-all duration-200"
+                      title="Thêm vào danh sách"
+                    >
                       <Plus className="w-5 h-5" />
                     </button>
                   </div>

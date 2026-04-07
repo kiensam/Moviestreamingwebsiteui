@@ -1,4 +1,4 @@
-import { Star, Play, TrendingUp, Crown } from 'lucide-react';
+import { Star, Play, TrendingUp, Crown, Plus } from 'lucide-react';
 
 interface Movie {
   id: string;
@@ -10,9 +10,10 @@ interface Movie {
 interface TopMoviesPageProps {
   movies?: Movie[];
   onMovieClick?: (movieId: string) => void;
+  onAddToWatchlist?: (movieId: string) => void;
 }
 
-export function TopMoviesPage({ movies = [], onMovieClick }: TopMoviesPageProps) {
+export function TopMoviesPage({ movies = [], onMovieClick, onAddToWatchlist }: TopMoviesPageProps) {
   const defaultTopMovies: Movie[] = [
     {
       id: '1',
@@ -186,12 +187,25 @@ export function TopMoviesPage({ movies = [], onMovieClick }: TopMoviesPageProps)
                       </p>
 
                       <div className="flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-4 group-hover:translate-x-0">
-                        <button className="flex items-center gap-3 bg-gradient-to-r from-red-500 via-purple-600 to-blue-600 hover:from-red-600 hover:via-purple-700 hover:to-blue-700 text-white font-bold px-8 py-3 rounded-xl transition-all duration-200 shadow-lg shadow-purple-500/50">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onMovieClick?.(movie.id);
+                          }}
+                          className="flex items-center gap-3 bg-gradient-to-r from-red-500 via-purple-600 to-blue-600 hover:from-red-600 hover:via-purple-700 hover:to-blue-700 text-white font-bold px-8 py-3 rounded-xl transition-all duration-200 shadow-lg shadow-purple-500/50"
+                        >
                           <Play className="w-5 h-5 fill-current" />
                           <span>Phát ngay</span>
                         </button>
-                        <button className="px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white font-semibold rounded-xl border border-white/30 transition-all duration-200">
-                          Chi tiết
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onAddToWatchlist?.(movie.id);
+                          }}
+                          className="px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white font-semibold rounded-xl border border-white/30 transition-all duration-200"
+                          title="Thêm vào danh sách"
+                        >
+                          <Plus className="w-5 h-5" />
                         </button>
                       </div>
                     </div>

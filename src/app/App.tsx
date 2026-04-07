@@ -6,6 +6,16 @@ import { MovieDetailPage } from './components/MovieDetailPage';
 import { VideoPlayerPage } from './components/VideoPlayerPage';
 import { CategoryPage } from './components/CategoryPage';
 import { TopMoviesPage } from './components/TopMoviesPage';
+import { LoginPage } from './components/LoginPage';
+import { RegisterPage } from './components/RegisterPage';
+import { WatchlistPage } from './components/WatchlistPage';
+
+interface Movie {
+  id: string;
+  title: string;
+  imageUrl: string;
+  rating: number;
+}
 
 const trendingMovies = [
   {
@@ -164,8 +174,11 @@ const cartoonMovies = [
 ];
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'categories' | 'top' | 'new' | 'detail' | 'player'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'categories' | 'top' | 'new' | 'detail' | 'player' | 'login' | 'register' | 'watchlist'>('home');
   const [selectedMovieId, setSelectedMovieId] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [watchlist, setWatchlist] = useState<Movie[]>([]);
+  const [isSeries, setIsSeries] = useState(false);
 
   const handleNavigate = (page: string) => {
     setCurrentPage(page as typeof currentPage);
@@ -173,11 +186,41 @@ export default function App() {
 
   const handleMovieClick = (movieId: string) => {
     setSelectedMovieId(movieId);
+    setIsSeries(Math.random() > 0.5);
     setCurrentPage('detail');
   };
 
   const handlePlayClick = () => {
     setCurrentPage('player');
+  };
+
+  const handleLogin = (email: string, password: string) => {
+    console.log('Login:', email, password);
+    setIsLoggedIn(true);
+    setCurrentPage('home');
+  };
+
+  const handleRegister = (name: string, email: string, password: string) => {
+    console.log('Register:', name, email, password);
+    setIsLoggedIn(true);
+    setCurrentPage('home');
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setWatchlist([]);
+    setCurrentPage('home');
+  };
+
+  const handleAddToWatchlist = (movieId: string) => {
+    const movie = allMovies.find(m => m.id === movieId);
+    if (movie && !watchlist.find(m => m.id === movieId)) {
+      setWatchlist([...watchlist, movie]);
+    }
+  };
+
+  const handleRemoveFromWatchlist = (movieId: string) => {
+    setWatchlist(watchlist.filter(m => m.id !== movieId));
   };
 
   const allMovies = [...trendingMovies, ...actionMovies, ...animeMovies, ...cartoonMovies];
@@ -193,21 +236,25 @@ export default function App() {
                 title="Xu Hướng Hiện Nay"
                 movies={trendingMovies}
                 onMovieClick={handleMovieClick}
+                onAddToWatchlist={handleAddToWatchlist}
               />
               <MovieRow
                 title="Hành Động & Giật Gân"
                 movies={actionMovies}
                 onMovieClick={handleMovieClick}
+                onAddToWatchlist={handleAddToWatchlist}
               />
               <MovieRow
                 title="Bộ Sưu Tập Anime"
                 movies={animeMovies}
                 onMovieClick={handleMovieClick}
+                onAddToWatchlist={handleAddToWatchlist}
               />
               <MovieRow
                 title="Hoạt Hình Kinh Điển"
                 movies={cartoonMovies}
                 onMovieClick={handleMovieClick}
+                onAddToWatchlist={handleAddToWatchlist}
               />
             </div>
             <div className="h-24"></div>
@@ -215,10 +262,22 @@ export default function App() {
         );
 
       case 'categories':
-        return <CategoryPage movies={allMovies} onMovieClick={handleMovieClick} />;
+        return (
+          <CategoryPage
+            movies={allMovies}
+            onMovieClick={handleMovieClick}
+            onAddToWatchlist={handleAddToWatchlist}
+          />
+        );
 
       case 'top':
-        return <TopMoviesPage movies={allMovies.slice(0, 10)} onMovieClick={handleMovieClick} />;
+        return (
+          <TopMoviesPage
+            movies={allMovies.slice(0, 10)}
+            onMovieClick={handleMovieClick}
+            onAddToWatchlist={handleAddToWatchlist}
+          />
+        );
 
       case 'new':
         return (
@@ -229,16 +288,19 @@ export default function App() {
                 title="Mới Cập Nhật Tuần Này"
                 movies={trendingMovies}
                 onMovieClick={handleMovieClick}
+                onAddToWatchlist={handleAddToWatchlist}
               />
               <MovieRow
                 title="Sắp Ra Mắt"
                 movies={actionMovies}
                 onMovieClick={handleMovieClick}
+                onAddToWatchlist={handleAddToWatchlist}
               />
               <MovieRow
                 title="Phim Mới 2026"
                 movies={animeMovies}
                 onMovieClick={handleMovieClick}
+                onAddToWatchlist={handleAddToWatchlist}
               />
             </div>
             <div className="h-24"></div>
@@ -259,6 +321,32 @@ export default function App() {
         return (
           <VideoPlayerPage
             suggestedMovies={actionMovies.slice(0, 6)}
+            isSeries={isSeries}
+          />
+        );
+
+      case 'login':
+        return (
+          <LoginPage
+            onLogin={handleLogin}
+            onSwitchToRegister={() => setCurrentPage('register')}
+          />
+        );
+
+      case 'register':
+        return (
+          <RegisterPage
+            onRegister={handleRegister}
+            onSwitchToLogin={() => setCurrentPage('login')}
+          />
+        );
+
+      case 'watchlist':
+        return (
+          <WatchlistPage
+            watchlist={watchlist}
+            onRemoveFromWatchlist={handleRemoveFromWatchlist}
+            onMovieClick={handleMovieClick}
           />
         );
 
@@ -269,8 +357,13 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
-      {currentPage !== 'player' && (
-        <Navbar currentPage={currentPage} onNavigate={handleNavigate} />
+      {currentPage !== 'player' && currentPage !== 'login' && currentPage !== 'register' && (
+        <Navbar
+          currentPage={currentPage}
+          onNavigate={handleNavigate}
+          isLoggedIn={isLoggedIn}
+          onLogout={handleLogout}
+        />
       )}
       {renderPage()}
     </div>
